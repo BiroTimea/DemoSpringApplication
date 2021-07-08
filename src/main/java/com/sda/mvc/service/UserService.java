@@ -10,47 +10,58 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
+@Slf4j
 public class UserService {
 
     @Autowired
-    private UserRepositoryIF userRepositoryIF;
-    @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private UserRepositoryIF userRepositoryIF;
 
     public List<User> findUsersInAgeGroup(int x, int y) {
-        Iterable<User> allUsersIF = userRepositoryIF.findAll();
-        List<User> allUsers = userRepository.findAllUsers();
-
-        return allUsers.stream()
-                .filter(user -> user.getAge() > x && user.getAge() < y)
-                .collect(Collectors.toList());
+        return userRepositoryIF.getUsersByAgeBetween(x, y);
     }
 
     public void saveUser(User user) {
-        if (user.getAge() != 0 && user.getUsername() != null && user.getEmail() != null && user.getName() != null && user.getPassword() != null) {
+        if (user.getAge() != 0 && user.getName() != null &&
+                user.getUsername() != null &&
+                user.getEmail() != null &&
+                user.getPassword() != null) {
             userRepositoryIF.save(user);
-            log.info("User saved!");
+//            userRepository.save(user);
+            log.info("All good, we saved this user.");
         } else {
             throw new IllegalArgumentException();
         }
     }
 
-    public User deleteUser(String username){
-        List<User> allUsers = userRepository.findAllUsers();
-        Integer i = null;
-        for (User user : allUsers) {
-            if (user.getUsername().equals(username)) {
-                i = allUsers.indexOf(user);
-            }
+//    public void deleteUser(String username)
+//    {
+//        List<User> allUsers = userRepository.findAllUsers();
+//        allUsers.removeAll(allUsers.stream()
+//                .filter(user -> user.getUsername().equals(username))
+//                .collect(Collectors.toList()));
+//    }
+
+    public Integer deleteUserByUsername(String username) {
+
+        Integer user1 = userRepositoryIF.deleteByUsername(username);
+        if (user1 == 0) {
+            log.warn("User didn't get game ended");
+        } else {
+            log.info("user with id " + user1 + " was game ended.");
         }
-        if (i != null) {
-            return userRepository.delete(i);
-        }else{
-            throw new IllegalArgumentException("User not found!");
-        }
+        return user1;
     }
 
+    public Integer deleteUserById(Integer id) {
+        Integer user = userRepositoryIF.deleteByUserId(id);
+        if (user != 0) {
+            log.info("user with id " + id + " was game ended");
+        } else {
+            log.warn("user didn't get game ended.");
+        }
+        return user;
+    }
 }
